@@ -1,0 +1,6 @@
+mod dup  = [x]:{ x x }
+mod swap = [x y]:{ y x }   
+mod drop = [x]:{ }         
+mod nip  = [x y]:{ y }       
+mod over = [x y]:{ x y x } 
+mod rot  = [x y z]:{ z x y } 

@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "nova",
+    "common",
+    "lexer",
+    "parser",
+    "compiler",
+    "vm",
+    "core"
+]
+
+[profile.release]
+opt-level = 3

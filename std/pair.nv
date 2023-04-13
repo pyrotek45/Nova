@@ -1,0 +1,15 @@
+mod pair::new = [x y]: {
+    [x y]: [which]: {
+        which == 0 ?{ return(x) }
+        which == 1 ?{ return(y) }
+    }
+}
+
+mod pair::first = [x]: {
+    x(0)
+}
+
+mod pair::second = [x]: {
+    x(1)
+}
+

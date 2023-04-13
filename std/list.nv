@@ -1,0 +1,28 @@
+mod list::map = [list block]: {
+    newlist = []
+    for(i = 0, &i list {
+        newlist = push(newlist block(i))
+    })
+    newlist
+}
+
+mod list::fold = [list seed block]: {
+    seed
+    for(i = 0, &i list {
+        block(i)
+    })
+}
+
+mod list::filter = [list test]: {
+    newlist = []
+    for(i = 0, &i list {
+        test(i) ?{
+            newlist = push(newlist i)
+        }
+    })
+    newlist
+}
+
+mod list::sum = [list]: {
+    list::fold(list 0 {+})
+} 
