@@ -25,4 +25,4 @@ mod list::filter = [list test]: {
 
 mod list::sum = [list]: {
     list::fold(list 0 {+})
-} 
+}

@@ -15,9 +15,6 @@ fn main() {
     nova.add_function("pop", native::list::pop);
     nova.add_function("last", native::list::last);
 
-    let start = std::time::Instant::now();
-
-    #[allow(clippy::single_match)]
     match std::env::args().nth(1) {
         Some(option) => match option.as_str() {
             "run" => {
@@ -39,6 +36,21 @@ fn main() {
                     }
                     println!("Disassembly:");
                     nova.dis();
+                } else {
+                    println!("Error: No file path specified");
+                }
+            }
+
+            "fmt" => {
+                if let Some(filepath) = std::env::args().nth(2) {
+                    match fmt::format_code(&filepath) {
+                        Ok(_) => {
+                            println!("Format Complete!")
+                        },
+                        Err(_) => {
+                            println!("Could not format {}", filepath)
+                        },
+                    }
                 } else {
                     println!("Error: No file path specified");
                 }
@@ -69,7 +81,4 @@ fn main() {
             }
         }
     }
-
-    let duration = start.elapsed();
-    println!("Main Execution >> {:?}", duration);
 }

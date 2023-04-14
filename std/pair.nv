@@ -12,4 +12,3 @@ mod pair::first = [x]: {
 mod pair::second = [x]: {
     x(1)
 }
-

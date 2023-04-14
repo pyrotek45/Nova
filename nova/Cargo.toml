@@ -12,3 +12,4 @@ core = { path = "../core"}
 vm ={ path = "../vm" }
 native = { path = "../native"}
 disassembler = { path = "../disassembler"}
+fmt ={ path = "../fmt" }
