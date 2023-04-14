@@ -340,11 +340,12 @@ impl Compiler {
                         }
                     }
                     arguments.extend_from_slice(logic);
-                    let mut bytes =
-                        match function_c.compile(arguments.to_vec(), self.filepath.clone()) {
-                            Ok(chunk) => chunk,
-                            Err(error) => return Err(error),
-                        };
+                    let bytes = match function_c.compile_chunk(arguments.to_vec()) {
+                        Ok(chunk) => chunk,
+                        Err(error) => return Err(error),
+                    };
+
+                    let mut bytes = function_c.load_package(bytes);
                     output.push(Code::CLOSURE);
                     let cast = bytes.len();
                     let int = cast.to_ne_bytes();
