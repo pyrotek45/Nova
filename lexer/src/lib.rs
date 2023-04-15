@@ -79,21 +79,6 @@ impl Lexer {
                     Token::Integer(v as i64)
                 });
             }
-            if &self.buffer == "-" {
-                match self.last_token() {
-                    Some(Token::Reg(_)) |
-                    Some(Token::RegRef(_)) |
-                    Some(Token::RegStore(_)) |
-                    Some(Token::Integer(_)) |
-                    Some(Token::Float(_)) |
-                    Some(Token::Symbol(')')) => {
-                        return Some(Token::Op(Operator::Sub));
-                    }
-                    _ => {return Some(Token::Op(Operator::Neg));}
-                    
-                }
-                
-            }
             return Some(Token::Reg(self.buffer.to_lowercase()));
         }
         None
@@ -269,7 +254,7 @@ impl Lexer {
                     self.row = 0;
                 }
                 // Letters and numbers
-                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' | '.' | ':' | '-' => {
+                'a'..='z' | 'A'..='Z' | '_' | '0'..='9' | '.' | ':' => {
                     self.push_char(char);
                 }
                 // Spaces
@@ -280,12 +265,26 @@ impl Lexer {
 
                 // Symbols
                 '+' | '*' | '/' | '(' | ')' | '<' | '>' | '`' | '~' | '@' | '%' | '^' | '&'
-                | ',' | '?' | ';' | '!' | '$' | '|' | '='  => {
+                | ',' | '?' | ';' | '!' | '$' | '|' | '=' | '-' => {
                     match self.check_token() {
                         Ok(_) => {}
                         Err(error) => return Err(error),
                     }
                     match char {
+                        '-' => {
+                            match self.last_token() {
+                                Some(Token::Reg(_)) |
+                                Some(Token::RegRef(_)) |
+                                Some(Token::RegStore(_)) |
+                                Some(Token::Integer(_)) |
+                                Some(Token::Float(_)) |
+                                Some(Token::Symbol(')')) => {
+                                    self.push_token(Token::Op(Operator::Sub));
+                                }
+                                _ => {self.push_token(Token::Op(Operator::Neg));}
+                                
+                            }
+                        }
                         '/' => match chars.peek() {
                             Some(&'/') => {
                                 chars.next();
