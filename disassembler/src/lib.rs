@@ -321,6 +321,7 @@ impl Disassembler {
                 }
 
                 Code::POP => self.out("Pop"),
+                Code::NEG => self.out("Neg"),
                 _ => {}
             }
         }

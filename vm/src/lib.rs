@@ -780,7 +780,21 @@ impl Vm {
                 Code::POP => {
                     self.state.pop();
                 }
-
+                Code::NEG => {
+                    if let Some(item) = self.state.pop_fast() {
+                        let result = match item {
+                            VmSmall::Int(int) => {VmSmall::Int(-int)}
+                            VmSmall::Float(float) => {VmSmall::Float(-float)}
+                            _ => {
+                                todo!()
+                            }
+                        };
+                        self.state.push_fast(result)
+                    } else {
+                        todo!()
+                    }
+                    
+                }
                 _ => {}
             }
 

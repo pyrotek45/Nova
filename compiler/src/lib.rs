@@ -110,7 +110,7 @@ impl Compiler {
                 Token::StoreFastBingId(_) => todo!(),
                 Token::BindingRef(_) => todo!(),
                 Token::Integer(value) => {
-                    if value < &(u8::MAX as i64) {
+                    if value < &(u8::MAX as i64) && value > &0 {
                         output.push(Code::BYTE);
                         let int = *value as u8;
                         output.push(int);
@@ -242,7 +242,7 @@ impl Compiler {
                     common::tokens::Operator::Mul => output.push(Code::MUL),
                     common::tokens::Operator::Div => output.push(Code::DIV),
                     common::tokens::Operator::PopBindings => todo!(),
-                    common::tokens::Operator::Neg => todo!(),
+                    common::tokens::Operator::Neg => output.push(Code::NEG),
                     common::tokens::Operator::Break => todo!(),
                     common::tokens::Operator::Continue => todo!(),
                     common::tokens::Operator::ResolveBind => todo!(),

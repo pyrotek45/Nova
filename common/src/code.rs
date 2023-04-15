@@ -66,4 +66,6 @@ impl Code {
     pub const CHAR: u8 = 41;
 
     pub const POP: u8 = 42;
+
+    pub const NEG: u8 = 43;
 }
