@@ -46,10 +46,10 @@ fn main() {
                     match fmt::format_code(&filepath) {
                         Ok(_) => {
                             println!("Format Complete!")
-                        },
+                        }
                         Err(_) => {
                             println!("Could not format {}", filepath)
-                        },
+                        }
                     }
                 } else {
                     println!("Error: No file path specified");

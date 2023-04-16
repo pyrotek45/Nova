@@ -11,7 +11,7 @@ pub fn new() -> Disassembler {
 pub struct Disassembler {
     depth: Vec<usize>,
     pub native_functions: common::table::Table<String>,
-    ip: usize
+    ip: usize,
 }
 
 impl Disassembler {
@@ -21,7 +21,6 @@ impl Disassembler {
         }
         println!("{}", output)
     }
-
 
     fn next(&mut self, input: &mut std::vec::IntoIter<u8>) -> Option<u8> {
         if let Some(index) = self.depth.last() {
@@ -38,7 +37,6 @@ impl Disassembler {
         &mut self,
         mut input: std::vec::IntoIter<u8>,
     ) -> Result<(), common::error::NovaError> {
-
         while let Some(code) = self.next(&mut input) {
             match code {
                 Code::RET => {
@@ -92,7 +90,10 @@ impl Disassembler {
                     self.out(&format!("Store ID {}", index))
                 }
                 Code::ID => {
-                    let index = u16::from_ne_bytes([self.next(&mut input).unwrap(), self.next(&mut input).unwrap()]);
+                    let index = u16::from_ne_bytes([
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                    ]);
                     self.out(&format!("ID {}", index))
                 }
                 Code::ASSIGN => self.out("Assign"),
@@ -196,7 +197,10 @@ impl Disassembler {
                 Code::EQUALS => self.out("Equals"),
                 Code::MODULO => self.out("Modulo"),
                 Code::REFID => {
-                    let index = u16::from_ne_bytes([self.next(&mut input).unwrap(), self.next(&mut input).unwrap()]);
+                    let index = u16::from_ne_bytes([
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                    ]);
                     self.out(&format!("Referance ID {}", index))
                 }
 

@@ -3,6 +3,13 @@ use common::{
     tokens::{Operator, Token, TokenList},
 };
 
+fn extract_current_directory(path: &str) -> Option<String> {
+    if let Some(last_slash_index) = path.rfind('/') {
+        return Some(path[..last_slash_index + 1].to_string());
+    }
+    None
+}
+
 pub enum LexFrame {
     Paren(usize, usize),
     Block(usize, usize),
@@ -166,33 +173,52 @@ impl Lexer {
                 } else {
                     self.is_parsing_stringdq = false;
                     match self.last_token() {
-                        Some(Token::Reg(caller)) => {
-                            match caller.as_str() {
-                                "import" => {
-                                    self.take_last_token();
-                                    //println!("getting import {}", self.buffer.clone());
-                                    let mut lexer = new();
+                        Some(Token::Reg(caller)) => match caller.as_str() {
+                            "import" => {
+                                self.take_last_token();
+                                let mut lexer = new();
+
+                                if let Some(mut current_directory) =
+                                    extract_current_directory(&self.filepath)
+                                {
+                                    current_directory.push_str(&self.buffer);
+                                    match lexer.open_file(&current_directory) {
+                                        Ok(_) => {}
+                                        Err(_) => {
+                                            println!(
+                                                "Cant open {}. Current dir: {}",
+                                                current_directory, self.filepath
+                                            )
+                                        }
+                                    }
+                                } else {
                                     match lexer.open_file(&self.buffer) {
                                         Ok(_) => {}
-                                        Err(_) => todo!(),
-                                    }
-                                    let mut program = match lexer.parse() {
-                                        Ok(lexed) => lexed.to_vec(),
-                                        Err(error) => {
-                                            error.show();
-                                            std::process::exit(1);
+                                        Err(_) => {
+                                            println!(
+                                                "Cant open {}. Current dir: {}",
+                                                &self.buffer, self.filepath
+                                            )
                                         }
-                                    };
-                                    self.push_token(Token::CurrentFile(self.buffer.clone()));
-                                    self.output.last_mut().unwrap().append(&mut program);
-                                    self.push_token(Token::CurrentFile(self.filepath.clone()));
-                                }
+                                    }
+                                };
 
-                                _ => {
-                                    self.push_token(Token::String(self.buffer.clone()));
-                                }
+                                let mut program = match lexer.parse() {
+                                    Ok(lexed) => lexed.to_vec(),
+                                    Err(error) => {
+                                        error.show();
+                                        std::process::exit(1);
+                                    }
+                                };
+                                self.push_token(Token::CurrentFile(self.buffer.clone()));
+                                self.output.last_mut().unwrap().append(&mut program);
+                                self.push_token(Token::CurrentFile(self.filepath.clone()));
                             }
-                        }
+
+                            _ => {
+                                self.push_token(Token::String(self.buffer.clone()));
+                            }
+                        },
                         _ => {
                             self.push_token(Token::String(self.buffer.clone()));
                         }
@@ -271,20 +297,19 @@ impl Lexer {
                         Err(error) => return Err(error),
                     }
                     match char {
-                        '-' => {
-                            match self.last_token() {
-                                Some(Token::Reg(_)) |
-                                Some(Token::RegRef(_)) |
-                                Some(Token::RegStore(_)) |
-                                Some(Token::Integer(_)) |
-                                Some(Token::Float(_)) |
-                                Some(Token::Symbol(')')) => {
-                                    self.push_token(Token::Op(Operator::Sub));
-                                }
-                                _ => {self.push_token(Token::Op(Operator::Neg));}
-                                
+                        '-' => match self.last_token() {
+                            Some(Token::Reg(_))
+                            | Some(Token::RegRef(_))
+                            | Some(Token::RegStore(_))
+                            | Some(Token::Integer(_))
+                            | Some(Token::Float(_))
+                            | Some(Token::Symbol(')')) => {
+                                self.push_token(Token::Op(Operator::Sub));
                             }
-                        }
+                            _ => {
+                                self.push_token(Token::Op(Operator::Neg));
+                            }
+                        },
                         '/' => match chars.peek() {
                             Some(&'/') => {
                                 chars.next();

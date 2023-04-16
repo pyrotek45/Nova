@@ -783,8 +783,8 @@ impl Vm {
                 Code::NEG => {
                     if let Some(item) = self.state.pop_fast() {
                         let result = match item {
-                            VmSmall::Int(int) => {VmSmall::Int(-int)}
-                            VmSmall::Float(float) => {VmSmall::Float(-float)}
+                            VmSmall::Int(int) => VmSmall::Int(-int),
+                            VmSmall::Float(float) => VmSmall::Float(-float),
                             _ => {
                                 todo!()
                             }
@@ -793,7 +793,6 @@ impl Vm {
                     } else {
                         todo!()
                     }
-                    
                 }
                 _ => {}
             }

@@ -1,4 +1,4 @@
-use std::fs::{OpenOptions};
+use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Result, Seek, SeekFrom, Write};
 
 pub fn format_code(filepath: &str) -> Result<()> {
@@ -27,7 +27,7 @@ pub fn format_code(filepath: &str) -> Result<()> {
 
     for line in contents.lines() {
         let trimmed = line.trim();
-    
+
         if trimmed.is_empty() {
             if !empty_line {
                 formatted.push('\n');
@@ -35,9 +35,9 @@ pub fn format_code(filepath: &str) -> Result<()> {
             }
             continue;
         }
-    
+
         empty_line = false;
-    
+
         if trimmed.ends_with('{') {
             formatted.push_str(&"    ".repeat(indentation));
             formatted.push_str(trimmed);
