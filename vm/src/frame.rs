@@ -2,6 +2,7 @@ use crate::state::LargeList;
 
 #[derive(Debug, Clone)]
 pub enum CallType {
+    Loop,
     Block,
     Function,
     Closure,

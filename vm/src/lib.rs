@@ -59,14 +59,14 @@ impl Vm {
                 Code::RET => {
                     if let Some(ret) = self.callstack.pop() {
                         match ret.kind {
-                            frame::CallType::Block => {
+                            CallType::Block => {
                                 self.goto(ret.ret);
                             }
-                            frame::CallType::Function => {
+                            CallType::Function => {
                                 self.state.deallocate_registers();
                                 self.goto(ret.ret)
                             }
-                            frame::CallType::Closure => {
+                            CallType::Closure => {
                                 self.state.deallocate_registers();
                                 self.state.deallocate_upvalue();
                                 self.goto(ret.ret);
@@ -84,6 +84,14 @@ impl Vm {
                                 } else {
                                     self.goto(ret.ret);
                                 }
+                            }
+                            CallType::Loop => {
+                                self.callstack.push(frame::Frame {
+                                    kind: frame::CallType::Loop,
+                                    target: ret.target,
+                                    ret: ret.ret,
+                                });
+                                self.goto(ret.target)
                             }
                         }
                     } else {
@@ -108,6 +116,10 @@ impl Vm {
                             CallType::For(_, _, _) => {
                                 self.goto(ret.ret);
                             }
+                            CallType::Loop => {
+                                self.goto(ret.ret);
+                            }
+
                         }
                     } else {
                         break;
@@ -551,6 +563,7 @@ impl Vm {
                         }
                         CallType::Closure => todo!(),
                         CallType::For(_, _, _) => todo!(),
+                        CallType::Loop => todo!(),
                     };
                 }
                 Code::WHEN => {
@@ -843,6 +856,24 @@ impl Vm {
                         self.state.push_binding(item);
                     } else {
                         todo!()
+                    }
+                }
+
+                Code::LOOP => {
+                    if let Some(block) = self.state.pop_fast() {
+                        match block {
+                            VmSmall::Block(target) => {
+                                self.callstack.push(frame::Frame {
+                                    kind: frame::CallType::Loop,
+                                    target,
+                                    ret: self.current_instruction,
+                                });
+                                self.goto(target)
+                            }
+                            _ => {
+                                todo!()
+                            }
+                        }
                     }
                 }
                 _ => {}

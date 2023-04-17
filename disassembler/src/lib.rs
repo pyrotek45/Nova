@@ -361,6 +361,7 @@ impl Disassembler {
                     self.out(&format!("Get Binding {}", index))
                 }
                 Code::STOREBIND => self.out("Store New Binding"),
+                Code::LOOP => self.out("Loop"),
                 _ => {}
             }
         }

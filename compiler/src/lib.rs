@@ -201,6 +201,7 @@ impl Compiler {
                     self.global = function_c.global.clone();
                 }
                 Token::Call(name) => match name.as_str() {
+                    "loop" => output.push(Code::LOOP),
                     "range" => output.push(Code::RANGE),
                     "for" => {
                         output.push(Code::FOR);

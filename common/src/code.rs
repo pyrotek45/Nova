@@ -76,4 +76,6 @@ impl Code {
 
     pub const STOREBIND: u8 = 47;
     pub const GETBIND: u8 = 48;
+
+    pub const LOOP: u8 = 49;
 }
