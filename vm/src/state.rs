@@ -10,6 +10,7 @@ pub fn new() -> State {
         offset: 0,
         upvalues: vec![],
         globals: vec![],
+        bindings: vec![],
     }
 }
 
@@ -18,6 +19,7 @@ pub struct State {
     stack: List,
     heap: LargeList,
     registers: LargeList,
+    bindings: Vec<LargeList>,
     window: Vec<usize>,
     offset: usize,
     upvalues: Vec<LargeList>,
@@ -25,6 +27,26 @@ pub struct State {
 }
 
 impl State {
+    #[inline(always)]
+    pub fn push_binding(&mut self, item: VmBig) {
+        self.bindings.last_mut().unwrap().push(item)
+    }
+
+    #[inline(always)]
+    pub fn binding_to_stack(&mut self, index: usize) {
+        self.push(self.bindings.last().unwrap()[index].clone())
+    }
+
+    #[inline(always)]
+    pub fn new_bindings(&mut self) {
+        self.bindings.push(vec![]);
+    }
+
+    #[inline(always)]
+    pub fn pop_bindings(&mut self) {
+        self.bindings.pop();
+    }
+
     #[inline(always)]
     pub fn store_in_global(&mut self, index: usize, item: VmBig) {
         self.globals[index] = item

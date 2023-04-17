@@ -4,6 +4,7 @@ pub fn new() -> Disassembler {
     Disassembler {
         depth: vec![],
         native_functions: common::table::new(),
+        variables: common::table::new(),
         ip: 0,
     }
 }
@@ -11,6 +12,7 @@ pub fn new() -> Disassembler {
 pub struct Disassembler {
     depth: Vec<usize>,
     pub native_functions: common::table::Table<String>,
+    pub variables: common::table::Table<String>,
     ip: usize,
 }
 
@@ -87,14 +89,19 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    self.out(&format!("Store ID {}", index))
+                    if let Some(var) = self.variables.retreive(index) {
+                        self.out(&format!("Store {}", var))
+                    }
+                    
                 }
                 Code::ID => {
                     let index = u16::from_ne_bytes([
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    self.out(&format!("ID {}", index))
+                    if let Some(var) = self.variables.retreive(index as usize) {
+                        self.out(&format!("Get {}", var))
+                    }
                 }
                 Code::ASSIGN => self.out("Assign"),
                 Code::ALLOCATEREG => {
@@ -136,7 +143,10 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    self.out(&format!("Direct call {}", target))
+                    if let Some(var) = self.variables.retreive(target) {
+                        self.out(&format!("Direct call {}", var))
+                    }
+                    
                 }
                 Code::NEWLIST => {
                     let size = u64::from_ne_bytes([
@@ -164,7 +174,10 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    self.out(&format!("StoreFast ID {}", index))
+                    if let Some(var) = self.variables.retreive(index) {
+                        self.out(&format!("StoreFast {}", var))
+                    }
+                    
                 }
                 Code::FUNCTION => {
                     let jump = usize::from_ne_bytes([
@@ -201,7 +214,10 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    self.out(&format!("Referance ID {}", index))
+                    if let Some(var) = self.variables.retreive(index as usize) {
+                        self.out(&format!("Referance {}", var))
+                    }
+                    
                 }
 
                 Code::CLOSURE => {
@@ -230,6 +246,7 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
+
                     self.out(&format!("Closure ID {}", index))
                 }
 
@@ -326,6 +343,24 @@ impl Disassembler {
 
                 Code::POP => self.out("Pop"),
                 Code::NEG => self.out("Neg"),
+                Code::BREAK => self.out("Break"),
+                Code::NEWBINDING => self.out("Create Bindings"),
+                Code::POPBINDING => self.out("Remove Bindings"),
+                Code::GETBIND => {
+                    let index = usize::from_ne_bytes([
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                        self.next(&mut input).unwrap(),
+                    ]);
+
+                    self.out(&format!("Get Binding {}", index))
+                }
+                Code::STOREBIND => self.out("Store New Binding"),
                 _ => {}
             }
         }

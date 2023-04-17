@@ -90,6 +90,29 @@ impl Vm {
                         break;
                     }
                 }
+                Code::BREAK => {
+                    if let Some(ret) = self.callstack.pop() {
+                        match ret.kind {
+                            frame::CallType::Block => {
+                                self.goto(ret.ret);
+                            }
+                            frame::CallType::Function => {
+                                self.state.deallocate_registers();
+                                self.goto(ret.ret)
+                            }
+                            frame::CallType::Closure => {
+                                self.state.deallocate_registers();
+                                self.state.deallocate_upvalue();
+                                self.goto(ret.ret);
+                            }
+                            CallType::For(_, _, _) => {
+                                self.goto(ret.ret);
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                }
                 Code::INTEGER => {
                     let int = i64::from_ne_bytes([
                         self.next(),
@@ -790,6 +813,34 @@ impl Vm {
                             }
                         };
                         self.state.push_fast(result)
+                    } else {
+                        todo!()
+                    }
+                }
+                Code::NEWBINDING => {
+                    self.state.new_bindings();
+                }
+                Code::POPBINDING => {
+                    self.state.pop_bindings();
+                }
+                Code::GETBIND => {
+                    
+                    let index = usize::from_ne_bytes([
+                        self.next(),
+                        self.next(),
+                        self.next(),
+                        self.next(),
+                        self.next(),
+                        self.next(),
+                        self.next(),
+                        self.next(),
+                    ]);
+
+                    self.state.binding_to_stack(index);
+                }
+                Code::STOREBIND => {
+                    if let Some(item) = self.state.pop() {
+                        self.state.push_binding(item);
                     } else {
                         todo!()
                     }

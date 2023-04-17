@@ -12,10 +12,12 @@ pub fn new() -> Compiler {
         upvalues: common::table::new(),
         global: common::table::new(),
         entry: 0,
+        bindings: common::table::new(),
     }
 }
 
 pub struct Compiler {
+    pub bindings: common::table::Table<String>,
     pub global: common::table::Table<String>,
     pub variables: common::table::Table<String>,
     pub upvalues: common::table::Table<String>,
@@ -107,8 +109,27 @@ impl Compiler {
                         output.extend_from_slice(&bytes);
                     }
                 }
-                Token::StoreFastBingId(_) => todo!(),
-                Token::BindingRef(_) => todo!(),
+                Token::StoreFastBindId(id) => {
+                    if self.bindings.get_index(id.to_string()).is_some() {
+                        todo!()
+                    } else {
+                        self.bindings.insert(id.to_string());
+                        output.push(Code::STOREBIND);
+                    }
+                },
+                Token::BindingRef(id) => {
+                    if let Some(index) = self.bindings.get_index(id.to_string()) {
+                        output.push(Code::GETBIND);
+                        let bytes = index.to_ne_bytes();
+                        output.extend_from_slice(&bytes);
+                    } else {
+                        return Err(common::error::compiler_error(
+                            format!("{} is not initialized", &id),
+                            self.currentline,
+                            self.filepath.clone(),
+                        ));
+                    }
+                },
                 Token::Integer(value) => {
                     if value < &(u8::MAX as i64) && value > &0 {
                         output.push(Code::BYTE);
@@ -154,6 +175,7 @@ impl Compiler {
                     function_c.currentline = self.currentline;
                     function_c.native_functions = self.native_functions.clone();
                     function_c.global = self.global.clone();
+                    function_c.filepath = self.filepath.clone();
                     let mut arguments = vec![];
                     for args in input.iter().rev() {
                         match args {
@@ -175,7 +197,8 @@ impl Compiler {
                     let cast = bytes.len();
                     let int = cast.to_ne_bytes();
                     output.extend_from_slice(&int);
-                    output.append(&mut bytes)
+                    output.append(&mut bytes);
+                    self.global = function_c.global.clone();
                 }
                 Token::Call(name) => match name.as_str() {
                     "range" => output.push(Code::RANGE),
@@ -243,7 +266,7 @@ impl Compiler {
                     common::tokens::Operator::Div => output.push(Code::DIV),
                     common::tokens::Operator::PopBindings => todo!(),
                     common::tokens::Operator::Neg => output.push(Code::NEG),
-                    common::tokens::Operator::Break => todo!(),
+                    common::tokens::Operator::Break => output.push(Code::BREAK),
                     common::tokens::Operator::Continue => todo!(),
                     common::tokens::Operator::ResolveBind => todo!(),
                 },
@@ -330,6 +353,7 @@ impl Compiler {
                     function_c.currentline = self.currentline;
                     function_c.native_functions = self.native_functions.clone();
                     function_c.global = self.global.clone();
+                    function_c.filepath = self.filepath.clone();
                     let mut arguments = vec![];
                     for args in input.iter().rev() {
                         match args {
@@ -350,7 +374,8 @@ impl Compiler {
                     let cast = bytes.len();
                     let int = cast.to_ne_bytes();
                     output.extend_from_slice(&int);
-                    output.append(&mut bytes)
+                    output.append(&mut bytes);
+                    self.global = function_c.global.clone();
                 }
                 Token::Doblock(_) => {
                     todo!();
@@ -383,6 +408,40 @@ impl Compiler {
                     self.entry = output.len();
                 }
                 Token::Pop => output.push(Code::POP),
+                Token::Bindings(_) => todo!(),
+                Token::LetBinding(input, logic) => {
+                    let mut function_c = new();
+                    function_c.upvalues = self.upvalues.clone();
+                    function_c.currentline = self.currentline;
+                    function_c.native_functions = self.native_functions.clone();
+                    function_c.global = self.global.clone();
+                    function_c.filepath = self.filepath.clone();
+                    function_c.variables = self.variables.clone();
+
+                    let mut arguments = vec![];
+                    for args in input.iter().rev() {
+                        match args {
+                            Token::Reg(id) => {
+                                arguments.push(Token::StoreFastBindId(id.to_string()))
+                            }
+                            _ => {
+                                todo!()
+                            }
+                        }
+                    }
+
+                    arguments.extend_from_slice(logic);
+                    let mut bind = match function_c.compile_chunk(arguments.to_vec()) {
+                        Ok(chunk) => chunk,
+                        Err(error) => return Err(error),
+                    };
+
+                    bind.pop();
+                    bind.insert(0, Code::NEWBINDING);
+                    bind.push(Code::POPBINDING);
+                    output.extend_from_slice(&bind);
+                    self.global = function_c.global.clone();
+                }
             }
         }
         // end return

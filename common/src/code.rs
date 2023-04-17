@@ -68,4 +68,12 @@ impl Code {
     pub const POP: u8 = 42;
 
     pub const NEG: u8 = 43;
+
+    pub const BREAK: u8 = 44;
+
+    pub const NEWBINDING: u8 = 45;
+    pub const POPBINDING: u8 = 46;
+
+    pub const STOREBIND: u8 = 47;
+    pub const GETBIND: u8 = 48;
 }

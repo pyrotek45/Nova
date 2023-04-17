@@ -86,7 +86,10 @@ impl Lexer {
                     Token::Integer(v as i64)
                 });
             }
-            return Some(Token::Reg(self.buffer.to_lowercase()));
+            #[allow(clippy::match_single_binding)]
+            return match self.buffer.as_str() {
+                _ => Some(Token::Reg(self.buffer.to_lowercase())),
+            };
         }
         None
     }
@@ -110,6 +113,10 @@ impl Lexer {
                         self.take_last_token();
                         self.push_token(Token::RegRef(id))
                     }
+                    Some(Token::Symbol('@')) => {
+                        self.take_last_token();
+                        self.push_token(Token::BindingRef(id))
+                    }
                     Some(Token::Reg(last)) => match last.as_str() {
                         "mod" => {
                             self.take_last_token();
@@ -122,6 +129,11 @@ impl Lexer {
                                     self.filepath.clone(),
                                 ));
                             }
+                            self.globals.insert(id.to_string());
+                            self.push_token(Token::GlobalReg(id))
+                        }
+                        "global" => {
+                            self.take_last_token();
                             self.globals.insert(id.to_string());
                             self.push_token(Token::GlobalReg(id))
                         }
@@ -303,11 +315,54 @@ impl Lexer {
                             | Some(Token::RegStore(_))
                             | Some(Token::Integer(_))
                             | Some(Token::Float(_))
+                            | Some(Token::BindingRef(_))
                             | Some(Token::Symbol(')')) => {
-                                self.push_token(Token::Op(Operator::Sub));
+                                match chars.peek() {
+                                    Some(&'>') => {
+                                        chars.next();
+                                        // check if list is last and make bindings
+                                        match self.take_last_token() {
+                                            Some(Token::List(list)) => {
+                                                self.push_token(Token::Bindings(list))
+                                            }
+                                            _ => {
+                                                // error if not list
+                                                return Err(common::error::lexer_error(
+                                                    "Binding needs a list of arguments".to_string(),
+                                                    "Try adding a list before the binding operator, [] -> {} ".to_string(),
+                                                    self.line,
+                                                    self.row - self.buffer.len(),
+                                                    self.filepath.clone(),
+                                                ));
+                                            }
+                                        }
+                                    }
+                                    _ => self.push_token(Token::Op(Operator::Sub)),
+                                }
                             }
                             _ => {
-                                self.push_token(Token::Op(Operator::Neg));
+                                match chars.peek() {
+                                    Some(&'>') => {
+                                        chars.next();
+                                        // check if list is last and make bindings
+                                        match self.take_last_token() {
+                                            Some(Token::List(list)) => {
+                                                self.push_token(Token::Bindings(list))
+                                            }
+                                            _ => {
+                                                // error if not list
+                                                return Err(common::error::lexer_error(
+                                                    "Binding needs a list of arguments".to_string(),
+                                                    "Try adding a list before the binding operator, [] -> {} ".to_string(),
+                                                    self.line,
+                                                    self.row - self.buffer.len(),
+                                                    self.filepath.clone(),
+                                                ));
+                                            }
+                                        }
+                                    }
+                                    _ => self.push_token(Token::Op(Operator::Neg)),
+                                }
                             }
                         },
                         '/' => match chars.peek() {
@@ -331,12 +386,11 @@ impl Lexer {
                         '(' => {
                             // check for function calls
                             match self.take_last_token() {
-                                Some(Token::Reg(caller)) => {
-                                    if caller.as_str() == "import" {
-                                    } else {
-                                        self.push_token(Token::Call(caller))
-                                    }
-                                }
+                                Some(Token::Reg(caller)) => match caller.as_str() {
+                                    "import" => {}
+                                    "break" => self.push_token(Token::Op(Operator::Break)),
+                                    _ => self.push_token(Token::Call(caller)),
+                                },
                                 Some(Token::Symbol(')')) => {}
                                 Some(token) => self.push_token(token),
                                 None => {}

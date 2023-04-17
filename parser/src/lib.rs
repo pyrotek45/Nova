@@ -19,6 +19,9 @@ impl Parser {
                 Token::Arguments(_) => {
                     self.output.push(token);
                 }
+                Token::Bindings(_) => {
+                    self.output.push(token);
+                }
                 Token::ConditionalBlock(block) => {
                     let mut parser = new();
                     let parsed = match parser.parse(block.to_vec()) {
@@ -35,8 +38,8 @@ impl Parser {
                     };
                     self.output.push(Token::Doblock(parsed.to_vec()))
                 }
-                Token::BlockLiteral(block) => {
-                    if let Some(Token::Arguments(input)) = self.output.last().cloned() {
+                Token::BlockLiteral(block) => match self.output.last().cloned() {
+                    Some(Token::Arguments(input)) => {
                         self.output.pop();
                         if let Some(Token::Arguments(input2)) = self.output.last().cloned() {
                             self.output.pop();
@@ -59,7 +62,19 @@ impl Parser {
                             self.output
                                 .push(Token::Function(input.to_vec(), parsed.to_vec()))
                         }
-                    } else {
+                    }
+                    Some(Token::Bindings(input)) => {
+                        self.output.pop();
+
+                        let mut parser = new();
+                        let parsed = match parser.parse(block.to_vec()) {
+                            Ok(parsed) => parsed,
+                            Err(error) => return Err(error),
+                        };
+                        self.output
+                            .push(Token::LetBinding(input.to_vec(), parsed.to_vec()))
+                    }
+                    _ => {
                         let mut parser = new();
                         let parsed = match parser.parse(block.to_vec()) {
                             Ok(parsed) => parsed,
@@ -67,7 +82,7 @@ impl Parser {
                         };
                         self.output.push(Token::BlockLiteral(parsed.to_vec()))
                     }
-                }
+                },
                 Token::List(block) => {
                     let mut parser = new();
                     let mut parsed = match parser.parse(block.to_vec()) {
@@ -90,7 +105,7 @@ impl Parser {
                 | Token::Integer(_)
                 | Token::Float(_)
                 | Token::BindingRef(_)
-                | Token::StoreFastBingId(_)
+                | Token::StoreFastBindId(_)
                 | Token::Char(_)
                 | Token::String(_) => {
                     self.output.push(token);

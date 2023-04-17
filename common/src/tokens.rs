@@ -41,7 +41,7 @@ pub enum Token {
 
     GlobalReg(String),
 
-    StoreFastBingId(String),
+    StoreFastBindId(String),
     BindingRef(String),
 
     // Basic types
@@ -59,6 +59,8 @@ pub enum Token {
     Function(TokenList, TokenList),
     Closure(TokenList, TokenList, TokenList),
     List(TokenList),
+    Bindings(TokenList),
+    LetBinding(TokenList, TokenList),
     Arguments(TokenList),
 
     // Function call
