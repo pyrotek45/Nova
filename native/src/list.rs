@@ -1,5 +1,5 @@
 use common::error::NovaError;
-use vm::state::{self, VmBig};
+use vm::state::{self, VmBig, VmSmall};
 
 pub fn length(state: &mut state::State) -> Result<(), NovaError> {
     if let Some(list) = state.pop() {
@@ -58,6 +58,42 @@ pub fn last(state: &mut state::State) -> Result<(), NovaError> {
             _ => {
                 return Err(common::error::runetime_error(
                     "Not enough arguments for last".to_string(),
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+// list index item
+pub fn insert(state: &mut state::State) -> Result<(), NovaError> {
+    if let (Some(arg1),Some(arg2),Some(arg3))= (state.pop(),state.pop_fast(),state.pop()) {
+        match (arg1,arg2,arg3) {
+            (item,VmSmall::Int(index),VmBig::List(mut list)) => {
+                list.insert(index as usize, item);
+                state.push(list.last().unwrap().clone());
+            }
+            _ => {
+                return Err(common::error::runetime_error(
+                    "Not enough arguments for insert".to_string(),
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+// list index 
+pub fn remove(state: &mut state::State) -> Result<(), NovaError> {
+    if let (Some(arg1),Some(arg2))= (state.pop_fast(),state.pop()) {
+        match (arg1,arg2) {
+            (VmSmall::Int(index),VmBig::List(mut list)) => {
+                list.remove(index as usize);
+                state.push(list.last().unwrap().clone());
+            }
+            _ => {
+                return Err(common::error::runetime_error(
+                    "Not enough arguments for remove".to_string(),
                 ));
             }
         }

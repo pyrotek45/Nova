@@ -14,7 +14,9 @@ fn main() {
     nova.add_function("push", native::list::push);
     nova.add_function("pop", native::list::pop);
     nova.add_function("last", native::list::last);
-
+    nova.add_function("insert", native::list::insert);
+    nova.add_function("remove", native::list::remove);
+    
     match std::env::args().nth(1) {
         Some(option) => match option.as_str() {
             "run" => {
