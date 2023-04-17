@@ -26,3 +26,24 @@ mod list::filter = [list test]: {
 mod list::sum = [list]: {
     list::fold(list 0 {+})
 }
+
+mod list::replace = [list index item]: {
+    list
+    remove(index)
+    insert(index item)
+}
+
+mod list::sort = [list]: {
+    i = 0
+    j = 0
+    for( &i range(0 , length(list)) {
+        for( &j range(i , length(list) - 1) {
+            list(i) > list(j) ?{
+                temp = list(i)
+                list = list::replace(list i list(j))
+                list = list::replace(list j temp)
+            }
+        })
+    })
+    list
+}

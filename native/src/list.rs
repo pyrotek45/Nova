@@ -71,7 +71,7 @@ pub fn insert(state: &mut state::State) -> Result<(), NovaError> {
         match (arg1,arg2,arg3) {
             (item,VmSmall::Int(index),VmBig::List(mut list)) => {
                 list.insert(index as usize, item);
-                state.push(list.last().unwrap().clone());
+                state.push(VmBig::List(list.clone()));
             }
             _ => {
                 return Err(common::error::runetime_error(
@@ -89,7 +89,7 @@ pub fn remove(state: &mut state::State) -> Result<(), NovaError> {
         match (arg1,arg2) {
             (VmSmall::Int(index),VmBig::List(mut list)) => {
                 list.remove(index as usize);
-                state.push(list.last().unwrap().clone());
+                state.push(VmBig::List(list.clone()));
             }
             _ => {
                 return Err(common::error::runetime_error(
