@@ -119,7 +119,6 @@ impl Vm {
                             CallType::Loop => {
                                 self.goto(ret.ret);
                             }
-
                         }
                     } else {
                         break;
@@ -837,7 +836,6 @@ impl Vm {
                     self.state.pop_bindings();
                 }
                 Code::GETBIND => {
-                    
                     let index = usize::from_ne_bytes([
                         self.next(),
                         self.next(),

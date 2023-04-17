@@ -116,7 +116,7 @@ impl Compiler {
                         self.bindings.insert(id.to_string());
                         output.push(Code::STOREBIND);
                     }
-                },
+                }
                 Token::BindingRef(id) => {
                     if let Some(index) = self.bindings.get_index(id.to_string()) {
                         output.push(Code::GETBIND);
@@ -129,7 +129,7 @@ impl Compiler {
                             self.filepath.clone(),
                         ));
                     }
-                },
+                }
                 Token::Integer(value) => {
                     if value < &(u8::MAX as i64) && value > &0 {
                         output.push(Code::BYTE);
