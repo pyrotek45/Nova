@@ -111,12 +111,14 @@ impl Parser {
                     self.output.push(token);
                 }
                 Token::Call(_) => {
+                    self.empty_until_open_paren();
                     self.operator.push(token);
                 }
                 Token::Symbol(',') => {
                     self.empty_until_open_paren();
                 }
                 Token::Symbol('(') => {
+                    
                     self.operator.push(token);
                 }
                 Token::Symbol(')') => {

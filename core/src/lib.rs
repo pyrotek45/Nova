@@ -47,7 +47,6 @@ impl Core {
 
         let mut dis = disassembler::new();
         dis.native_functions = self.compiler.native_functions.clone();
-        dis.variables = self.compiler.variables.clone();
         let _ = dis.dis(program.into_iter());
     }
     pub fn add_function(&mut self, name: &str, function: vm::CallBack) {

@@ -4,7 +4,6 @@ pub fn new() -> Disassembler {
     Disassembler {
         depth: vec![],
         native_functions: common::table::new(),
-        variables: common::table::new(),
         ip: 0,
     }
 }
@@ -12,7 +11,6 @@ pub fn new() -> Disassembler {
 pub struct Disassembler {
     depth: Vec<usize>,
     pub native_functions: common::table::Table<String>,
-    pub variables: common::table::Table<String>,
     ip: usize,
 }
 
@@ -89,19 +87,14 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    if let Some(var) = self.variables.retreive(index) {
-                        self.out(&format!("Store {}", var))
-                    }
-                    
+                    self.out(&format!("Store ID {}", index))
                 }
                 Code::ID => {
                     let index = u16::from_ne_bytes([
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    if let Some(var) = self.variables.retreive(index as usize) {
-                        self.out(&format!("Get {}", var))
-                    }
+                    self.out(&format!("ID {}", index))
                 }
                 Code::ASSIGN => self.out("Assign"),
                 Code::ALLOCATEREG => {
@@ -143,10 +136,7 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    if let Some(var) = self.variables.retreive(target) {
-                        self.out(&format!("Direct call {}", var))
-                    }
-                    
+                    self.out(&format!("Direct call {}", target))
                 }
                 Code::NEWLIST => {
                     let size = u64::from_ne_bytes([
@@ -174,10 +164,7 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    if let Some(var) = self.variables.retreive(index) {
-                        self.out(&format!("StoreFast {}", var))
-                    }
-                    
+                    self.out(&format!("StoreFast ID {}", index))
                 }
                 Code::FUNCTION => {
                     let jump = usize::from_ne_bytes([
@@ -214,10 +201,7 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-                    if let Some(var) = self.variables.retreive(index as usize) {
-                        self.out(&format!("Referance {}", var))
-                    }
-                    
+                    self.out(&format!("Referance ID {}", index))
                 }
 
                 Code::CLOSURE => {
@@ -246,7 +230,6 @@ impl Disassembler {
                         self.next(&mut input).unwrap(),
                         self.next(&mut input).unwrap(),
                     ]);
-
                     self.out(&format!("Closure ID {}", index))
                 }
 
