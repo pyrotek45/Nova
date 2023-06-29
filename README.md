@@ -17,8 +17,8 @@ println("hello world!")
 
 How about a recursive Fib function?
 ```cool
-recfib = [n]: {
-    if( n < 2 {
+mod recfib = [n]: {
+    if( n < 2 , {
         return(n)
     } {
         recfib(n - 1) + recfib(n - 2)
