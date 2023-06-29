@@ -49,7 +49,7 @@ Change your working directory to the root of the Nova repository:
 
 ```bash
 
-cd novacore
+cd nova
 ```
 
 Build Nova using Cargo:
