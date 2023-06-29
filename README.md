@@ -132,7 +132,7 @@ If, is another control flow function, unlike when however, it takes two blocks.
 
 ```cool
 if( false { 
-  prinlnt("this will not print") 
+  println("this will not print") 
 } { 
   println("this will") 
 })
