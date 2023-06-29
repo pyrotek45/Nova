@@ -42,7 +42,7 @@ Clone the Nova repository to your local machine by running the following command
 
     
 ```bash
-git clone https://github.com/pyrotek45/Novacore.git
+git clone https://github.com/pyrotek45/Nova.git
 ```
 
 Change your working directory to the root of the Nova repository:
